@@ -87,8 +87,7 @@
           </ListBox.ItemTemplate>
         </ListBox>
         <StackPanel Grid.Row="1" Margin="0,8,0,0">
-          <TextBlock x:Name="OrderHint" TextWrapping="Wrap" />
-          <WrapPanel Margin="0,8,0,0">
+          <WrapPanel>
             <Button x:Name="StageRuleButton" Padding="12,5" Click="StageRuleButton_Click" Content="Stage preferred mod after conflicts" IsEnabled="False" />
             <Button x:Name="IgnoreCombinationButton" Margin="8,0,0,0" Padding="12,5" Click="IgnoreCombinationButton_Click" Content="Ignore combination" IsEnabled="False" />
           </WrapPanel>

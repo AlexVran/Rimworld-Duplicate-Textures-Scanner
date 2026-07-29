@@ -120,7 +120,6 @@ public partial class MainWindow
         if (DuplicateGroups.SelectedItem is not TextureConflictView conflictView)
         {
             CopiesList.ItemsSource = null;
-            OrderHint.Text = "";
             StageRuleButton.IsEnabled = false;
             IgnoreCombinationButton.IsEnabled = false;
             return;
@@ -128,16 +127,12 @@ public partial class MainWindow
 
         CopiesList.ItemsSource = conflictView.Copies.Select(variant => new TextureVariantView(variant, _texturePreviewProvider.Load(variant.FullPath))).ToList();
         CopiesList.SelectedIndex = -1;
-        OrderHint.Text = "Select the mod whose texture you want to keep visible in-game.";
         IgnoreCombinationButton.IsEnabled = true;
     }
 
     private void CopiesList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         StageRuleButton.IsEnabled = CopiesList.SelectedItem is TextureVariantView;
-        if (CopiesList.SelectedItem is not TextureVariantView preferredVariantView || DuplicateGroups.SelectedItem is not TextureConflictView conflictView) return;
-        var overriddenMods = conflictView.Copies.Where(variant => !string.Equals(variant.PackageId, preferredVariantView.PackageId, StringComparison.OrdinalIgnoreCase)).Select(variant => $"{variant.ModName} ({variant.PackageId})");
-        OrderHint.Text = $"Preferred: {preferredVariantView.ModName} ({preferredVariantView.PackageId}). RimWorld normally lets later-loaded mods override earlier ones, so place this mod AFTER: {string.Join(", ", overriddenMods)}.";
     }
 
     private void IgnoreCombinationButton_Click(object sender, RoutedEventArgs e)
@@ -207,7 +202,6 @@ public partial class MainWindow
     private void RefreshVisibleConflicts()
     {
         CopiesList.ItemsSource = null;
-        OrderHint.Text = "";
         IgnoreCombinationButton.IsEnabled = false;
         StageRuleButton.IsEnabled = false;
         _visibleConflicts.Clear();
