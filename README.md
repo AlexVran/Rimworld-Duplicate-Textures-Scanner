@@ -1,5 +1,4 @@
-This app looks at all textures from your Rimworld active mods and tries to find duplicates based on their relative path. Then you can decide which to load first by using Rimsort user defined rules.
-When a duplicate is found, the relevant textures are loaded so you can choose which texture you want to be loaded first. Select the texture,
-click on "Stage preferred mod after conflicts" and then "Ignore selected mod combination" so the duplicates don't show up anymore on your list.
+This app scans textures from your active RimWorld mods and finds duplicates based on their relative path. It can scan Steam Workshop and local Mods folders together, then lets you choose which texture should win by using RimSort user-defined rules.
+When a duplicate is found, the relevant textures are loaded so you can choose the texture you want to keep. Select it, click "Stage preferred mod after conflicts", then click "Ignore combination" to hide that exact conflict combination from the list.
 
 Before closing the app, remember to click "Save Staged rules" so the newly added rules are saved to Rimsort's "userRules.json" file.
