@@ -59,6 +59,26 @@ public sealed class RimWorldTextureConflictScannerTests
         Assert.That(conflict.Variants.Select(variant => variant.PackageId), Is.EquivalentTo(["example.workshop", "example.local"]));
     }
 
+    [Test]
+    public async Task ScanAsync_UsesOnlyTheFirstActiveModWithEachPackageId()
+    {
+        using var local = new TemporaryDirectory();
+        using var workshop = new TemporaryDirectory();
+        CreateMod(local, "LocalDuplicate", "example.duplicate", "Textures/Shared/Chair.png", "local");
+        CreateMod(local, "OtherProvider", "example.other", "Textures/Shared/Chair.png", "other");
+        CreateMod(workshop, "WorkshopDuplicate", "example.duplicate", "Textures/Shared/Chair.png", "workshop");
+
+        var scanner = new RimWorldTextureConflictScanner(new RimWorldModManifestReader());
+        var activePackageIds = new HashSet<string>(["example.duplicate", "example.other"], StringComparer.OrdinalIgnoreCase);
+
+        var result = await scanner.ScanAsync([local.Path, workshop.Path], activePackageIds, null, CancellationToken.None);
+
+        Assert.That(result.ActiveModCount, Is.EqualTo(2));
+        Assert.That(result.TextureCount, Is.EqualTo(2));
+        var conflict = result.Conflicts.Single();
+        Assert.That(conflict.Variants.Select(variant => variant.ModName), Is.EquivalentTo(["LocalDuplicate", "OtherProvider"]));
+    }
+
     private static void CreateMod(TemporaryDirectory directory, string folderName, string packageId, string texturePath, string textureContent)
     {
         directory.CreateFile($"{folderName}/About/About.xml", $"<ModMetaData><name>{folderName}</name><packageId>{packageId}</packageId></ModMetaData>");

@@ -13,6 +13,7 @@ public sealed class RimWorldTextureConflictScanner(IModManifestReader manifestRe
     private TextureScanResult Scan(IReadOnlyCollection<string> modLibraryPaths, IReadOnlySet<string> activePackageIds, IProgress<ScanProgress>? progress, CancellationToken cancellationToken)
     {
         var variantsByRelativePath = new Dictionary<string, List<TextureVariant>>(StringComparer.OrdinalIgnoreCase);
+        var scannedPackageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var activeModCount = 0;
         var textureCount = 0;
 
@@ -22,6 +23,7 @@ public sealed class RimWorldTextureConflictScanner(IModManifestReader manifestRe
             cancellationToken.ThrowIfCancellationRequested();
             var manifest = manifestReader.Read(modDirectory);
             if (!activePackageIds.Contains(manifest.PackageId)) continue;
+            if (!scannedPackageIds.Add(manifest.PackageId)) continue;
             activeModCount++;
 
             foreach (var textureDirectory in Directory.EnumerateDirectories(modDirectory, "Textures", SearchOption.AllDirectories))
