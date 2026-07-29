@@ -9,6 +9,8 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="190" />
@@ -18,26 +20,41 @@
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
-    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Scan the folder containing your Steam Workshop mod folders or local Mods folders." FontWeight="SemiBold" />
-    <DockPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,8,0,12">
-      <Button DockPanel.Dock="Right" x:Name="ScanButton" Click="ScanButton_Click" Padding="20,6" Content="Scan texture paths" />
-      <Button DockPanel.Dock="Right" x:Name="CancelButton" Click="CancelButton_Click" Padding="12,6" Margin="0,0,8,0" Content="Cancel" IsEnabled="False" />
-      <Button DockPanel.Dock="Right" Click="BrowseButton_Click" Padding="12,6" Margin="0,0,8,0" Content="Browse…" />
-      <TextBox x:Name="RootPathTextBox" VerticalContentAlignment="Center" ToolTip="One or more mod roots, separated with ;" />
+    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Scan enabled mods from your Steam Workshop library, local Mods folder, or both. At least one valid folder is required." FontWeight="SemiBold" TextWrapping="Wrap" />
+    <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,8,0,12">
+      <Button x:Name="ScanButton" Click="ScanButton_Click" Padding="20,6" Content="Scan for duplicates" />
+      <Button x:Name="CancelButton" Click="CancelButton_Click" Padding="12,6" Margin="8,0,0,0" Content="Cancel" IsEnabled="False" />
+    </StackPanel>
+    <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
+      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Local Mods folder:" />
+      <TextBox Grid.Row="1" x:Name="LocalModsPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld local Mods folder; leave blank to exclude local mods" />
+      <Button Grid.Row="1" Grid.Column="1" Click="BrowseLocalModsButton_Click" Padding="12,6" Content="Browse" />
+    </Grid>
+    <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
+      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Steam Workshop folder:" />
+      <TextBox Grid.Row="1" x:Name="WorkshopPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="Steam Workshop RimWorld content folder; leave blank to exclude Workshop mods" />
+      <Button Grid.Row="1" Grid.Column="1" Click="BrowseWorkshopButton_Click" Padding="12,6" Content="Browse" />
+    </Grid>
+    <Grid Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
+      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Active mods config:" />
+      <TextBox Grid.Row="1" x:Name="ConfigPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld ModsConfig.xml, used to limit scanning to active mods" />
+      <Button Grid.Row="1" Grid.Column="1" Click="BrowseConfigButton_Click" Padding="12,6" Content="Browse" />
+    </Grid>
+    <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <TextBlock VerticalAlignment="Center" Text="Select a conflict, then use Ignore combination. Only an exact matching combination is hidden." TextWrapping="Wrap" />
     </DockPanel>
-    <DockPanel Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <Button DockPanel.Dock="Right" Click="BrowseConfigButton_Click" Padding="12,6" Content="Browse config…" />
-      <TextBox x:Name="ConfigPathTextBox" VerticalContentAlignment="Center" ToolTip="RimWorld ModsConfig.xml, used to limit scanning to active mods" />
-    </DockPanel>
-    <DockPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <TextBlock VerticalAlignment="Center" Text="Select a conflict, then use Ignore selected mod combination. Only an exact matching combination is hidden." TextWrapping="Wrap" />
-    </DockPanel>
-    <DockPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,12">
+    <DockPanel Grid.Row="6" Grid.ColumnSpan="2" Margin="0,0,0,12">
       <Button DockPanel.Dock="Right" x:Name="RemoveIgnoredCombinationButton" Click="RemoveIgnoredCombinationButton_Click" Padding="12,6" Content="Remove selected" IsEnabled="False" />
       <ListBox x:Name="IgnoredCombinationsListBox" Height="74" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
     </DockPanel>
 
-    <GroupBox Grid.Row="5" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
+    <GroupBox Grid.Row="7" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
       <ListView x:Name="DuplicateGroups" SelectionChanged="DuplicateGroups_SelectionChanged">
         <ListView.View>
           <GridView>
@@ -49,7 +66,7 @@
       </ListView>
     </GroupBox>
 
-    <GroupBox Grid.Row="5" Grid.Column="1" Header="Copies / preferred provider">
+    <GroupBox Grid.Row="7" Grid.Column="1" Header="Copies / preferred provider">
       <Grid Margin="8">
         <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <ListBox x:Name="CopiesList" SelectionChanged="CopiesList_SelectionChanged">
@@ -71,28 +88,34 @@
         </ListBox>
         <StackPanel Grid.Row="1" Margin="0,8,0,0">
           <TextBlock x:Name="OrderHint" TextWrapping="Wrap" />
-          <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-            <Button Padding="12,5" Click="CopyHintButton_Click" Content="Copy RimSort order hint" />
-            <Button x:Name="StageRuleButton" Margin="8,0,0,0" Padding="12,5" Click="StageRuleButton_Click" Content="Stage preferred mod after conflicts" IsEnabled="False" />
-            <Button x:Name="IgnoreCombinationButton" Margin="8,0,0,0" Padding="12,5" Click="IgnoreCombinationButton_Click" Content="Ignore selected mod combination" IsEnabled="False" />
-          </StackPanel>
+          <WrapPanel Margin="0,8,0,0">
+            <Button x:Name="StageRuleButton" Padding="12,5" Click="StageRuleButton_Click" Content="Stage preferred mod after conflicts" IsEnabled="False" />
+            <Button x:Name="IgnoreCombinationButton" Margin="8,0,0,0" Padding="12,5" Click="IgnoreCombinationButton_Click" Content="Ignore combination" IsEnabled="False" />
+          </WrapPanel>
         </StackPanel>
       </Grid>
     </GroupBox>
-    <TextBlock Grid.Row="6" Grid.ColumnSpan="2" x:Name="StatusText" Margin="0,10,0,0" Foreground="DimGray" />
-    <GroupBox Grid.Row="7" Grid.ColumnSpan="2" Header="RimSort user rules" Margin="0,10,0,0">
+    <TextBlock Grid.Row="8" Grid.ColumnSpan="2" x:Name="StatusText" Margin="0,10,0,0" Foreground="DimGray" />
+    <GroupBox Grid.Row="9" Grid.ColumnSpan="2" Header="RimSort user rules" Margin="0,10,0,0">
       <Grid Margin="8">
         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-        <DockPanel Grid.Row="0" Margin="0,0,0,6">
-          <Button DockPanel.Dock="Right" Padding="12,5" Click="ReloadRulesButton_Click" Content="Reload rules" />
-          <TextBox x:Name="RulesFilePathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimSort userRules.json file" />
-        </DockPanel>
+        <Grid Grid.Row="0" Margin="0,0,0,6">
+          <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
+          <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="RimSort rules file:" />
+          <TextBox Grid.Row="1" x:Name="RulesFilePathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimSort userRules.json file" />
+          <Button Grid.Row="1" Grid.Column="1" Padding="12,5" Click="BrowseRulesButton_Click" Content="Browse" />
+        </Grid>
         <ListBox Grid.Row="1" x:Name="RulesListBox" DisplayMemberPath="DisplayText" SelectionChanged="RulesListBox_SelectionChanged" />
-        <DockPanel Grid.Row="2" Margin="0,6,0,0">
-          <Button DockPanel.Dock="Right" x:Name="SaveRulesButton" Padding="12,5" Click="SaveRulesButton_Click" Content="Save staged rules" IsEnabled="False" />
-          <Button DockPanel.Dock="Right" x:Name="RemoveRuleButton" Margin="0,0,8,0" Padding="12,5" Click="RemoveRuleButton_Click" Content="Remove selected rule" IsEnabled="False" />
+        <Grid Grid.Row="2" Margin="0,6,0,0">
+          <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
           <TextBlock x:Name="RulesStatusText" VerticalAlignment="Center" Foreground="DimGray" />
-        </DockPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <Button x:Name="ReloadRulesButton" Padding="12,5" Click="ReloadRulesButton_Click" Content="Reload rules" />
+            <Button x:Name="RemoveRuleButton" Margin="8,0,0,0" Padding="12,5" Click="RemoveRuleButton_Click" Content="Remove selected rule" IsEnabled="False" />
+            <Button x:Name="SaveRulesButton" Margin="8,0,0,0" Padding="12,5" Click="SaveRulesButton_Click" Content="Save staged rules" IsEnabled="False" />
+          </StackPanel>
+        </Grid>
       </Grid>
     </GroupBox>
   </Grid>

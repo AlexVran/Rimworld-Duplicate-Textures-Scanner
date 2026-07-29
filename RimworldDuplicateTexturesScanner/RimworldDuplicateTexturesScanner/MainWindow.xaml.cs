@@ -37,7 +37,8 @@ public partial class MainWindow
         DuplicateGroups.ItemsSource = _visibleConflicts;
         IgnoredCombinationsListBox.ItemsSource = _ignoredModCombinations;
         RulesListBox.ItemsSource = _ruleSummaries;
-        RootPathTextBox.Text = @"F:\SteamLibrary\steamapps\workshop\content\294100";
+        WorkshopPathTextBox.Text = @"F:\SteamLibrary\steamapps\workshop\content\294100";
+        LocalModsPathTextBox.Text = @"F:\SteamLibrary\steamapps\common\RimWorld\Mods";
         ConfigPathTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "LocalLow", "Ludeon Studios", "RimWorld by Ludeon Studios", "Config", "ModsConfig.xml");
         RulesFilePathTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "RimSort", "dbs", "userRules.json");
         LoadIgnoredModCombinations();
@@ -45,11 +46,18 @@ public partial class MainWindow
         StatusText.Text = "The scan is limited to mods enabled in ModsConfig.xml.";
     }
 
-    private void BrowseButton_Click(object sender, RoutedEventArgs e)
+    private void BrowseWorkshopButton_Click(object sender, RoutedEventArgs e)
     {
         using var dialog = new FolderBrowserDialog();
-        dialog.Description = "Select a RimWorld mod-library folder";
-        if (dialog.ShowDialog() == Forms.DialogResult.OK) RootPathTextBox.Text = dialog.SelectedPath;
+        dialog.Description = "Select the Steam Workshop RimWorld content folder";
+        if (dialog.ShowDialog() == Forms.DialogResult.OK) WorkshopPathTextBox.Text = dialog.SelectedPath;
+    }
+
+    private void BrowseLocalModsButton_Click(object sender, RoutedEventArgs e)
+    {
+        using var dialog = new FolderBrowserDialog();
+        dialog.Description = "Select the RimWorld local Mods folder";
+        if (dialog.ShowDialog() == Forms.DialogResult.OK) LocalModsPathTextBox.Text = dialog.SelectedPath;
     }
 
     private void BrowseConfigButton_Click(object sender, RoutedEventArgs e)
@@ -61,10 +69,22 @@ public partial class MainWindow
         if (dialog.ShowDialog() == Forms.DialogResult.OK) ConfigPathTextBox.Text = dialog.FileName;
     }
 
+    private void BrowseRulesButton_Click(object sender, RoutedEventArgs e)
+    {
+        using var dialog = new OpenFileDialog();
+        dialog.Filter = "RimSort user rules|userRules.json|JSON files|*.json";
+        dialog.FileName = "userRules.json";
+        dialog.Title = "Select RimSort userRules.json";
+        if (dialog.ShowDialog() == Forms.DialogResult.OK) RulesFilePathTextBox.Text = dialog.FileName;
+    }
+
     private async void ScanButton_Click(object sender, RoutedEventArgs routedEvent)
     {
-        var modLibraryPaths = RootPathTextBox.Text.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Where(Directory.Exists).ToArray();
-        if (modLibraryPaths.Length == 0) { StatusText.Text = "Enter at least one existing mod-library folder."; return; }
+        var modLibraryPaths = new[] { WorkshopPathTextBox.Text, LocalModsPathTextBox.Text }
+            .Where(Directory.Exists)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        if (modLibraryPaths.Length == 0) { StatusText.Text = "Select an existing Steam Workshop folder, local Mods folder, or both."; return; }
         if (!File.Exists(ConfigPathTextBox.Text)) { StatusText.Text = "Select an existing RimWorld ModsConfig.xml file."; return; }
 
         IReadOnlySet<string> activePackageIds;
@@ -118,11 +138,6 @@ public partial class MainWindow
         if (CopiesList.SelectedItem is not TextureVariantView preferredVariantView || DuplicateGroups.SelectedItem is not TextureConflictView conflictView) return;
         var overriddenMods = conflictView.Copies.Where(variant => !string.Equals(variant.PackageId, preferredVariantView.PackageId, StringComparison.OrdinalIgnoreCase)).Select(variant => $"{variant.ModName} ({variant.PackageId})");
         OrderHint.Text = $"Preferred: {preferredVariantView.ModName} ({preferredVariantView.PackageId}). RimWorld normally lets later-loaded mods override earlier ones, so place this mod AFTER: {string.Join(", ", overriddenMods)}.";
-    }
-
-    private void CopyHintButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!string.IsNullOrWhiteSpace(OrderHint.Text)) System.Windows.Clipboard.SetText(OrderHint.Text);
     }
 
     private void IgnoreCombinationButton_Click(object sender, RoutedEventArgs e)

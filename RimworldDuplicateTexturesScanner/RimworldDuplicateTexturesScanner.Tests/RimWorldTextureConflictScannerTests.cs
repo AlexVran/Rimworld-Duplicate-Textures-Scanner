@@ -41,6 +41,24 @@ public sealed class RimWorldTextureConflictScannerTests
         Assert.That(result.Conflicts, Is.Empty);
     }
 
+    [Test]
+    public async Task ScanAsync_CombinesActiveModsFromWorkshopAndLocalRoots()
+    {
+        using var workshop = new TemporaryDirectory();
+        using var local = new TemporaryDirectory();
+        CreateMod(workshop, "WorkshopMod", "example.workshop", "Textures/Shared/Chair.png", "workshop");
+        CreateMod(local, "LocalMod", "example.local", "Textures/Shared/Chair.png", "local");
+
+        var scanner = new RimWorldTextureConflictScanner(new RimWorldModManifestReader());
+        var activePackageIds = new HashSet<string>(["example.workshop", "example.local"], StringComparer.OrdinalIgnoreCase);
+
+        var result = await scanner.ScanAsync([workshop.Path, local.Path], activePackageIds, null, CancellationToken.None);
+
+        var conflict = result.Conflicts.Single();
+        Assert.That(result.ActiveModCount, Is.EqualTo(2));
+        Assert.That(conflict.Variants.Select(variant => variant.PackageId), Is.EquivalentTo(["example.workshop", "example.local"]));
+    }
+
     private static void CreateMod(TemporaryDirectory directory, string folderName, string packageId, string texturePath, string textureContent)
     {
         directory.CreateFile($"{folderName}/About/About.xml", $"<ModMetaData><name>{folderName}</name><packageId>{packageId}</packageId></ModMetaData>");
