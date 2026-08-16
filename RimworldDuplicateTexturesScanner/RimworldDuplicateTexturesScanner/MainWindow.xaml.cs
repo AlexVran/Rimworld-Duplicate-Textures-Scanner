@@ -115,6 +115,8 @@ public partial class MainWindow
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _scanCancellation?.Cancel();
 
+    private void HideOrderedConflictsCheckBox_Changed(object sender, RoutedEventArgs e) => RefreshVisibleConflicts();
+
     private void DuplicateGroups_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (DuplicateGroups.SelectedItem is not TextureConflictView conflictView)
@@ -233,8 +235,9 @@ public partial class MainWindow
         foreach (var conflict in _scannedConflicts)
         {
             var combination = NormalizePackageIds(conflict.Variants.Select(variant => variant.PackageId));
-            if (!_ignoredModCombinations.Any(view => HaveSamePackageIds(view.PackageIds, combination)))
-                _visibleConflicts.Add(new TextureConflictView(conflict));
+            if (_ignoredModCombinations.Any(view => HaveSamePackageIds(view.PackageIds, combination))) continue;
+            if (HideOrderedConflictsCheckBox.IsChecked == true && conflict.HasCompleteDeclaredLoadOrder) continue;
+            _visibleConflicts.Add(new TextureConflictView(conflict));
         }
     }
 

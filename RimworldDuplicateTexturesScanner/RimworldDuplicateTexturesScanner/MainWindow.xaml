@@ -38,6 +38,7 @@
       <Button Grid.Row="4" Grid.Column="2" Click="BrowseConfigButton_Click" Padding="6,3" FontSize="16" Content="📁" ToolTip="Browse for ModsConfig.xml" />
     </Grid>
     <DockPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,12">
+      <CheckBox x:Name="HideOrderedConflictsCheckBox" DockPanel.Dock="Right" VerticalAlignment="Center" IsChecked="True" Checked="HideOrderedConflictsCheckBox_Changed" Unchecked="HideOrderedConflictsCheckBox_Changed" Content="Hide conflicts with valid About.xml order" ToolTip="Hide a duplicate texture only when every provider has a complete, unambiguous load order declared in About.xml." />
       <TextBlock VerticalAlignment="Center" Text="Select a conflict, then use Ignore combination. Only an exact matching combination is hidden." TextWrapping="Wrap" />
     </DockPanel>
     <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,0,12">

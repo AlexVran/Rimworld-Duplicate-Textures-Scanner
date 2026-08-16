@@ -79,9 +79,38 @@ public sealed class RimWorldTextureConflictScannerTests
         Assert.That(conflict.Variants.Select(variant => variant.ModName), Is.EquivalentTo(["LocalDuplicate", "OtherProvider"]));
     }
 
-    private static void CreateMod(TemporaryDirectory directory, string folderName, string packageId, string texturePath, string textureContent)
+    [Test]
+    public async Task ScanAsync_MarksConflictAsOrderedWhenAboutXmlDeclaresLoadAfter()
     {
-        directory.CreateFile($"{folderName}/About/About.xml", $"<ModMetaData><name>{folderName}</name><packageId>{packageId}</packageId></ModMetaData>");
+        using var directory = new TemporaryDirectory();
+        CreateMod(directory, "BallGames", "kaitorisenkou.BallGames", "Textures/Shared/BasketballGoal.png", "base");
+        CreateMod(directory, "BallGamesRetexture", "morton.RetextureBallGames", "Textures/Shared/BasketballGoal.png", "retexture", "<loadAfter><li>kaitorisenkou.BallGames</li></loadAfter>");
+        var scanner = new RimWorldTextureConflictScanner(new RimWorldModManifestReader());
+        var activePackageIds = new HashSet<string>(["kaitorisenkou.BallGames", "morton.RetextureBallGames"], StringComparer.OrdinalIgnoreCase);
+
+        var result = await scanner.ScanAsync([directory.Path], activePackageIds, null, CancellationToken.None);
+
+        Assert.That(result.Conflicts.Single().HasCompleteDeclaredLoadOrder, Is.True);
+    }
+
+    [Test]
+    public async Task ScanAsync_DoesNotMarkConflictAsOrderedWhenAProviderIsNotOrdered()
+    {
+        using var directory = new TemporaryDirectory();
+        CreateMod(directory, "First", "example.first", "Textures/Shared/Chair.png", "first");
+        CreateMod(directory, "Second", "example.second", "Textures/Shared/Chair.png", "second", "<loadAfter><li>example.first</li></loadAfter>");
+        CreateMod(directory, "Third", "example.third", "Textures/Shared/Chair.png", "third");
+        var scanner = new RimWorldTextureConflictScanner(new RimWorldModManifestReader());
+        var activePackageIds = new HashSet<string>(["example.first", "example.second", "example.third"], StringComparer.OrdinalIgnoreCase);
+
+        var result = await scanner.ScanAsync([directory.Path], activePackageIds, null, CancellationToken.None);
+
+        Assert.That(result.Conflicts.Single().HasCompleteDeclaredLoadOrder, Is.False);
+    }
+
+    private static void CreateMod(TemporaryDirectory directory, string folderName, string packageId, string texturePath, string textureContent, string orderMetadata = "")
+    {
+        directory.CreateFile($"{folderName}/About/About.xml", $"<ModMetaData><name>{folderName}</name><packageId>{packageId}</packageId>{orderMetadata}</ModMetaData>");
         directory.CreateFile($"{folderName}/{texturePath}", textureContent);
     }
 }
