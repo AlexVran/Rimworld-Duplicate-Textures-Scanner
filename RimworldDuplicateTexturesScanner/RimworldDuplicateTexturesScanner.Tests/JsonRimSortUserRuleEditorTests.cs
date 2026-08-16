@@ -72,4 +72,23 @@ public sealed class JsonRimSortUserRuleEditorTests
         var rulesAfterRemoval = JsonNode.Parse(File.ReadAllText(rulesPath))!["rules"]!.AsObject();
         Assert.That(rulesAfterRemoval.ContainsKey("lyth.anthrosonaefelines"), Is.False);
     }
+
+    [Test]
+    public void RemoveAllRules_ClearsEveryArrayRuleAndStagesTheChange()
+    {
+        using var directory = new TemporaryDirectory();
+        var rulesPath = directory.CreateFile("userRules.json", """
+            { "rules": [{ "packageId": "first.mod" }, { "packageId": "second.mod" }] }
+            """);
+        var editor = new JsonRimSortUserRuleEditor();
+
+        editor.Load(rulesPath);
+
+        Assert.Multiple(() =>
+        {
+            Assert.That(editor.RemoveAllRules(), Is.True);
+            Assert.That(editor.GetRuleSummaries(), Is.Empty);
+            Assert.That(editor.HasUnsavedChanges, Is.True);
+        });
+    }
 }

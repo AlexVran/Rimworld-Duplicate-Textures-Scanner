@@ -166,26 +166,50 @@ public partial class MainWindow
         catch (Exception exception) { RulesStatusText.Text = $"Could not save rules: {exception.Message}"; }
     }
 
-    private void RulesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => RemoveRuleButton.IsEnabled = RulesListBox.SelectedItem is RimSortRuleSummary;
+    private void RulesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => RemoveRuleButton.IsEnabled = RulesListBox.SelectedItems.Count > 0;
 
     private void RemoveRuleButton_Click(object sender, RoutedEventArgs e)
     {
-        if (RulesListBox.SelectedItem is not RimSortRuleSummary selectedRule) return;
+        var selectedRules = RulesListBox.SelectedItems.OfType<RimSortRuleSummary>().ToList();
+        if (selectedRules.Count == 0) return;
         try
         {
-            if (!_rimSortUserRuleEditor.RemoveRule(selectedRule.PackageId)) return;
+            var removedCount = selectedRules.Count(rule => _rimSortUserRuleEditor.RemoveRule(rule.PackageId));
+            if (removedCount == 0) return;
             RefreshRuleSummaries();
-            RulesStatusText.Text = $"Staged removal of {selectedRule.PackageId}.";
+            RulesStatusText.Text = $"Staged removal of {removedCount:N0} rule(s).";
         }
         catch (Exception exception) { RulesStatusText.Text = $"Could not remove rule: {exception.Message}"; }
     }
 
-    private void IgnoredCombinationsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => RemoveIgnoredCombinationButton.IsEnabled = IgnoredCombinationsListBox.SelectedItem is IgnoredModCombinationView;
+    private void RemoveAllRulesButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (!_rimSortUserRuleEditor.RemoveAllRules()) return;
+            RefreshRuleSummaries();
+            RulesStatusText.Text = "Staged removal of all rules.";
+        }
+        catch (Exception exception) { RulesStatusText.Text = $"Could not remove rules: {exception.Message}"; }
+    }
+
+    private void IgnoredCombinationsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e) => RemoveIgnoredCombinationButton.IsEnabled = IgnoredCombinationsListBox.SelectedItems.Count > 0;
 
     private void RemoveIgnoredCombinationButton_Click(object sender, RoutedEventArgs e)
     {
-        if (IgnoredCombinationsListBox.SelectedItem is not IgnoredModCombinationView selectedCombination) return;
-        _ignoredModCombinations.Remove(selectedCombination);
+        var selectedCombinations = IgnoredCombinationsListBox.SelectedItems.OfType<IgnoredModCombinationView>().ToList();
+        if (selectedCombinations.Count == 0) return;
+        foreach (var selectedCombination in selectedCombinations) _ignoredModCombinations.Remove(selectedCombination);
+        RemoveAllIgnoredCombinationsButton.IsEnabled = _ignoredModCombinations.Count > 0;
+        SaveIgnoredModCombinations();
+        RefreshVisibleConflicts();
+    }
+
+    private void RemoveAllIgnoredCombinationsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_ignoredModCombinations.Count == 0) return;
+        _ignoredModCombinations.Clear();
+        RemoveAllIgnoredCombinationsButton.IsEnabled = false;
         SaveIgnoredModCombinations();
         RefreshVisibleConflicts();
     }
@@ -195,6 +219,7 @@ public partial class MainWindow
         var combination = NormalizePackageIds(packageIds);
         if (combination.Count < 2 || _ignoredModCombinations.Any(view => HaveSamePackageIds(view.PackageIds, combination))) return;
         _ignoredModCombinations.Add(new IgnoredModCombinationView(combination));
+        RemoveAllIgnoredCombinationsButton.IsEnabled = true;
         SaveIgnoredModCombinations();
         RefreshVisibleConflicts();
     }
@@ -219,6 +244,7 @@ public partial class MainWindow
         {
             foreach (var combination in _ignoredConflictSettingsStore.Load().PackageIdCombinations.Select(NormalizePackageIds).Where(combination => combination.Count > 1).DistinctBy(combination => string.Join("|", combination), StringComparer.OrdinalIgnoreCase))
                 _ignoredModCombinations.Add(new IgnoredModCombinationView(combination));
+            RemoveAllIgnoredCombinationsButton.IsEnabled = _ignoredModCombinations.Count > 0;
         }
         catch (Exception exception) { StatusText.Text = $"Could not load ignored combinations: {exception.Message}"; }
     }
@@ -245,6 +271,7 @@ public partial class MainWindow
         foreach (var summary in _rimSortUserRuleEditor.GetRuleSummaries()) _ruleSummaries.Add(summary);
         SaveRulesButton.IsEnabled = _rimSortUserRuleEditor.HasUnsavedChanges;
         RemoveRuleButton.IsEnabled = false;
+        RemoveAllRulesButton.IsEnabled = _ruleSummaries.Count > 0;
     }
 
     private void SaveIgnoredModCombinations()

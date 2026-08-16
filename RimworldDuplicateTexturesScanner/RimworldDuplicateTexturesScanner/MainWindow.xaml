@@ -50,8 +50,9 @@
       <TextBlock VerticalAlignment="Center" Text="Select a conflict, then use Ignore combination. Only an exact matching combination is hidden." TextWrapping="Wrap" />
     </DockPanel>
     <DockPanel Grid.Row="6" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <Button DockPanel.Dock="Right" x:Name="RemoveIgnoredCombinationButton" Click="RemoveIgnoredCombinationButton_Click" Padding="12,6" Content="Remove selected" IsEnabled="False" />
-      <ListBox x:Name="IgnoredCombinationsListBox" Height="74" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
+      <Button DockPanel.Dock="Right" x:Name="RemoveAllIgnoredCombinationsButton" Click="RemoveAllIgnoredCombinationsButton_Click" Padding="12,6" Content="Remove all conflicts" IsEnabled="False" />
+      <Button DockPanel.Dock="Right" x:Name="RemoveIgnoredCombinationButton" Click="RemoveIgnoredCombinationButton_Click" Padding="12,6" Margin="0,0,8,0" Content="Remove selected conflicts" IsEnabled="False" />
+      <ListBox x:Name="IgnoredCombinationsListBox" Height="74" SelectionMode="Extended" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
     </DockPanel>
 
     <GroupBox Grid.Row="7" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
@@ -105,13 +106,14 @@
           <TextBox Grid.Row="1" x:Name="RulesFilePathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimSort userRules.json file" />
           <Button Grid.Row="1" Grid.Column="1" Padding="12,5" Click="BrowseRulesButton_Click" Content="Browse" />
         </Grid>
-        <ListBox Grid.Row="1" x:Name="RulesListBox" DisplayMemberPath="DisplayText" SelectionChanged="RulesListBox_SelectionChanged" />
+        <ListBox Grid.Row="1" x:Name="RulesListBox" SelectionMode="Extended" DisplayMemberPath="DisplayText" SelectionChanged="RulesListBox_SelectionChanged" />
         <Grid Grid.Row="2" Margin="0,6,0,0">
           <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
           <TextBlock x:Name="RulesStatusText" VerticalAlignment="Center" Foreground="DimGray" />
           <StackPanel Grid.Column="1" Orientation="Horizontal">
             <Button x:Name="ReloadRulesButton" Padding="12,5" Click="ReloadRulesButton_Click" Content="Reload rules" />
-            <Button x:Name="RemoveRuleButton" Margin="8,0,0,0" Padding="12,5" Click="RemoveRuleButton_Click" Content="Remove selected rule" IsEnabled="False" />
+            <Button x:Name="RemoveAllRulesButton" Margin="8,0,0,0" Padding="12,5" Click="RemoveAllRulesButton_Click" Content="Remove all rules" IsEnabled="False" />
+            <Button x:Name="RemoveRuleButton" Margin="8,0,0,0" Padding="12,5" Click="RemoveRuleButton_Click" Content="Remove selected rules" IsEnabled="False" />
             <Button x:Name="SaveRulesButton" Margin="8,0,0,0" Padding="12,5" Click="SaveRulesButton_Click" Content="Save staged rules" IsEnabled="False" />
           </StackPanel>
         </Grid>

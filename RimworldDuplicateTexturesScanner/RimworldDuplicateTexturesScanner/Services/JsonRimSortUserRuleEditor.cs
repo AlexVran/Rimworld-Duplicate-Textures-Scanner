@@ -67,6 +67,18 @@ public sealed class JsonRimSortUserRuleEditor : IRimSortUserRuleEditor
         return removed;
     }
 
+    public bool RemoveAllRules()
+    {
+        var removed = Rules switch
+        {
+            JsonArray { Count: > 0 } rules => ClearRules(rules),
+            JsonObject { Count: > 0 } rules => ClearRules(rules),
+            _ => false
+        };
+        HasUnsavedChanges |= removed;
+        return removed;
+    }
+
     public void Save()
     {
         if (_rulesFilePath is null) throw new InvalidOperationException("Load a RimSort rule file before saving.");
@@ -127,6 +139,18 @@ public sealed class JsonRimSortUserRuleEditor : IRimSortUserRuleEditor
     {
         var property = rules.FirstOrDefault(item => string.Equals(item.Key, packageId, StringComparison.OrdinalIgnoreCase));
         return property.Key is not null && rules.Remove(property.Key);
+    }
+
+    private static bool ClearRules(JsonArray rules)
+    {
+        rules.Clear();
+        return true;
+    }
+
+    private static bool ClearRules(JsonObject rules)
+    {
+        rules.Clear();
+        return true;
     }
 
     private static JsonArray GetOrCreateStringArray(JsonObject rule, string propertyName)

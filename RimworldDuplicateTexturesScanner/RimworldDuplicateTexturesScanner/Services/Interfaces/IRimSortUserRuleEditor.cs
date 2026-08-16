@@ -8,6 +8,7 @@ public interface IRimSortUserRuleEditor
     void Load(string rulesFilePath);
     void AddLoadAfterRule(string packageId, IEnumerable<RimSortLoadAfterTarget> targets);
     bool RemoveRule(string packageId);
+    bool RemoveAllRules();
     IReadOnlyList<RimSortRuleSummary> GetRuleSummaries();
     void Save();
 }
