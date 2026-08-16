@@ -14,8 +14,9 @@ public sealed class JsonRimSortUserRuleEditor : IRimSortUserRuleEditor
 
     public void Load(string filePath)
     {
+        var document = ReadDocument(filePath);
         _rulesFilePath = filePath;
-        _document = ReadDocument(filePath);
+        _document = document;
         EnsureRulesNode();
         HasUnsavedChanges = false;
     }
