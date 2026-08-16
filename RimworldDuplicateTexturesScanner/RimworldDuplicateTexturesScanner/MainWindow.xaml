@@ -7,10 +7,10 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" MinHeight="130" />
-      <RowDefinition Height="*" MinHeight="280" />
+      <RowDefinition Height="*" MinHeight="80" />
+      <RowDefinition Height="*" MinHeight="320" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" MinHeight="240" />
+      <RowDefinition Height="*" MinHeight="280" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" />
@@ -42,7 +42,7 @@
       </DockPanel>
       <Button DockPanel.Dock="Right" x:Name="RemoveAllIgnoredCombinationsButton" Click="RemoveAllIgnoredCombinationsButton_Click" Padding="12,6" Content="Remove all conflicts" IsEnabled="False" />
       <Button DockPanel.Dock="Right" x:Name="RemoveIgnoredCombinationButton" Click="RemoveIgnoredCombinationButton_Click" Padding="12,6" Margin="0,0,8,0" Content="Remove selected conflicts" IsEnabled="False" />
-      <ListBox x:Name="IgnoredCombinationsListBox" MinHeight="100" SelectionMode="Extended" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
+      <ListBox x:Name="IgnoredCombinationsListBox" MinHeight="80" SelectionMode="Extended" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
     </DockPanel>
     <GroupBox Grid.Row="4" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
       <ListView x:Name="DuplicateGroups" SelectionChanged="DuplicateGroups_SelectionChanged">
