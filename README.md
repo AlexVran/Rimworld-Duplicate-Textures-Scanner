@@ -2,3 +2,5 @@ This app scans textures from your active RimWorld mods and finds duplicates base
 When a duplicate is found, the relevant textures are loaded so you can choose the texture you want to keep. Select it, click "Stage preferred mod after conflicts", then click "Ignore combination" to hide that exact conflict combination from the list.
 
 Before closing the app, remember to click "Save Staged rules" so the newly added rules are saved to Rimsort's "userRules.json" file.
+
+App was developed with the help of Codex. I am a .net dev, I looked over the code, but if you have an issue with the fact that AI helped building this, you can skip it.
