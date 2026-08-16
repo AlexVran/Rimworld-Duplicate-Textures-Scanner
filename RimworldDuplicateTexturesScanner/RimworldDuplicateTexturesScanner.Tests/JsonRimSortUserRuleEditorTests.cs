@@ -91,4 +91,31 @@ public sealed class JsonRimSortUserRuleEditorTests
             Assert.That(editor.HasUnsavedChanges, Is.True);
         });
     }
+
+    [Test]
+    public void GetRuleSummaries_ReturnsLoadOrderAndPlacementConstraintsOnSeparateLines()
+    {
+        using var directory = new TemporaryDirectory();
+        var rulesPath = directory.CreateFile("userRules.json", """
+            {
+              "rules": {
+                "target.mod": {
+                  "loadAfter": { "before.mod": { "comment": "", "name": "Before" } },
+                  "loadBottom": { "comment": "" }
+                },
+                "bottom.only": { "loadBottom": { "comment": "" } }
+                ,"array.after": { "loadTheseAfter": ["first.mod", "second.mod"] }
+              }
+            }
+            """);
+        var editor = new JsonRimSortUserRuleEditor();
+
+        editor.Load(rulesPath);
+
+        Assert.That(editor.GetRuleSummaries(), Is.EqualTo(
+        [
+            new RimSortRuleSummary("array.after", $"array.after{Environment.NewLine}loadTheseAfter: first.mod, second.mod"),
+            new RimSortRuleSummary("target.mod", $"target.mod{Environment.NewLine}loadAfter: before.mod")
+        ]));
+    }
 }

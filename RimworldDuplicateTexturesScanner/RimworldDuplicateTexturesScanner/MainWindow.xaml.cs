@@ -18,7 +18,9 @@ public partial class MainWindow
     private readonly ObservableCollection<TextureConflictView> _visibleConflicts = [];
     private readonly ObservableCollection<IgnoredModCombinationView> _ignoredModCombinations = [];
     private readonly ObservableCollection<RimSortRuleSummary> _ruleSummaries = [];
+    private readonly ObservableCollection<RimSortRuleSummary> _visibleRuleSummaries = [];
     private IReadOnlyList<TextureConflict> _scannedConflicts = [];
+    private IReadOnlyDictionary<string, int> _activeModLoadOrder = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource? _scanCancellation;
 
     public MainWindow(
@@ -36,7 +38,7 @@ public partial class MainWindow
         InitializeComponent();
         DuplicateGroups.ItemsSource = _visibleConflicts;
         IgnoredCombinationsListBox.ItemsSource = _ignoredModCombinations;
-        RulesListBox.ItemsSource = _ruleSummaries;
+        RulesListBox.ItemsSource = _visibleRuleSummaries;
         WorkshopPathTextBox.Text = @"F:\SteamLibrary\steamapps\workshop\content\294100";
         LocalModsPathTextBox.Text = @"F:\SteamLibrary\steamapps\common\RimWorld\Mods";
         ConfigPathTextBox.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "LocalLow", "Ludeon Studios", "RimWorld by Ludeon Studios", "Config", "ModsConfig.xml");
@@ -87,10 +89,14 @@ public partial class MainWindow
         if (modLibraryPaths.Length == 0) { StatusText.Text = "Select an existing Steam Workshop folder, local Mods folder, or both."; return; }
         if (!File.Exists(ConfigPathTextBox.Text)) { StatusText.Text = "Select an existing RimWorld ModsConfig.xml file."; return; }
 
-        IReadOnlySet<string> activePackageIds;
-        try { activePackageIds = _activeModReader.ReadPackageIds(ConfigPathTextBox.Text); }
+        IReadOnlyList<string> activePackageIdsInLoadOrder;
+        try { activePackageIdsInLoadOrder = _activeModReader.ReadPackageIdsInLoadOrder(ConfigPathTextBox.Text); }
         catch (Exception exception) { StatusText.Text = $"Could not read ModsConfig.xml: {exception.Message}"; return; }
+        var activePackageIds = activePackageIdsInLoadOrder.ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (activePackageIds.Count == 0) { StatusText.Text = "ModsConfig.xml does not contain active mods."; return; }
+        _activeModLoadOrder = activePackageIdsInLoadOrder
+            .Select((packageId, index) => new KeyValuePair<string, int>(packageId, index))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
 
         SetScanControls(false);
         StatusText.Text = "Scanning texture paths…";
@@ -115,7 +121,10 @@ public partial class MainWindow
 
     private void CancelButton_Click(object sender, RoutedEventArgs e) => _scanCancellation?.Cancel();
 
-    private void HideOrderedConflictsCheckBox_Changed(object sender, RoutedEventArgs e) => RefreshVisibleConflicts();
+    private void HideOrderedConflictsCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (IsLoaded) RefreshVisibleConflicts();
+    }
 
     private void DuplicateGroups_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -127,7 +136,11 @@ public partial class MainWindow
             return;
         }
 
-        CopiesList.ItemsSource = conflictView.Copies.Select(variant => new TextureVariantView(variant, _texturePreviewProvider.Load(variant.FullPath))).ToList();
+        CopiesList.ItemsSource = conflictView.Copies
+            .OrderByDescending(variant => _activeModLoadOrder.GetValueOrDefault(variant.PackageId, -1))
+            .ThenBy(variant => variant.ModName, StringComparer.OrdinalIgnoreCase)
+            .Select(variant => new TextureVariantView(variant, _texturePreviewProvider.Load(variant.FullPath)))
+            .ToList();
         CopiesList.SelectedIndex = -1;
         IgnoreCombinationButton.IsEnabled = true;
     }
@@ -156,6 +169,11 @@ public partial class MainWindow
     }
 
     private void ReloadRulesButton_Click(object sender, RoutedEventArgs e) => LoadRimSortRules();
+
+    private void RulesSearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (IsLoaded) RefreshVisibleRuleSummaries();
+    }
 
     private void SaveRulesButton_Click(object sender, RoutedEventArgs e)
     {
@@ -263,6 +281,7 @@ public partial class MainWindow
         catch (Exception exception)
         {
             _ruleSummaries.Clear();
+            _visibleRuleSummaries.Clear();
             SaveRulesButton.IsEnabled = false;
             RulesStatusText.Text = $"Could not load rules: {exception.Message}";
         }
@@ -272,9 +291,20 @@ public partial class MainWindow
     {
         _ruleSummaries.Clear();
         foreach (var summary in _rimSortUserRuleEditor.GetRuleSummaries()) _ruleSummaries.Add(summary);
+        RefreshVisibleRuleSummaries();
         SaveRulesButton.IsEnabled = _rimSortUserRuleEditor.HasUnsavedChanges;
         RemoveRuleButton.IsEnabled = false;
         RemoveAllRulesButton.IsEnabled = _ruleSummaries.Count > 0;
+    }
+
+    private void RefreshVisibleRuleSummaries()
+    {
+        var searchText = RulesSearchTextBox?.Text.Trim();
+        _visibleRuleSummaries.Clear();
+        foreach (var summary in _ruleSummaries.Where(summary => string.IsNullOrWhiteSpace(searchText)
+            || summary.PackageId.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+            || summary.DisplayText.Contains(searchText, StringComparison.OrdinalIgnoreCase)))
+            _visibleRuleSummaries.Add(summary);
     }
 
     private void SaveIgnoredModCombinations()

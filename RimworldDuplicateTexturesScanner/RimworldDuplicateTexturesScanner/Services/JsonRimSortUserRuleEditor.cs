@@ -201,24 +201,55 @@ public sealed class JsonRimSortUserRuleEditor : IRimSortUserRuleEditor
 
     private static IEnumerable<RimSortRuleSummary> GetRuleSummaries(JsonNode rules) => rules switch
     {
-        JsonArray array => array.OfType<JsonObject>().Select(rule => CreateSummary(rule, rule["packageId"]?.GetValue<string>() ?? "(rule without packageId)")),
-        JsonObject map => map.Where(property => property.Value is JsonObject).Select(property => CreateSummary((JsonObject)property.Value!, property.Key)),
+        JsonArray array => array.OfType<JsonObject>().Where(HasDisplayedConstraint).Select(rule => CreateSummary(rule, rule["packageId"]?.GetValue<string>() ?? "(rule without packageId)")),
+        JsonObject map => map.Where(property => property.Value is JsonObject && HasDisplayedConstraint((JsonObject)property.Value!)).Select(property => CreateSummary((JsonObject)property.Value!, property.Key)),
         _ => []
     };
+
+    private static bool HasDisplayedConstraint(JsonObject rule) => rule.Any(HasConstraintContent);
 
     private static RimSortRuleSummary CreateSummary(JsonObject rule, string packageId)
     {
         var constraints = rule
-            .Where(property => property.Key != "packageId")
+            .Where(HasConstraintContent)
             .Select(CreateConstraintSummary)
             .Where(summary => summary is not null);
-        return new RimSortRuleSummary(packageId, $"{packageId} — {string.Join(" | ", constraints)}");
+        return new RimSortRuleSummary(packageId, $"{packageId}{Environment.NewLine}{string.Join(Environment.NewLine, constraints)}");
     }
 
-    private static string? CreateConstraintSummary(KeyValuePair<string, JsonNode?> property) => property.Value switch
+    private static bool IsDisplayedConstraintProperty(string propertyName) => IsLoadAfterProperty(propertyName) || IsLoadPositionProperty(propertyName);
+
+    private static bool IsLoadAfterProperty(string propertyName) => string.Equals(propertyName, "loadAfter", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(propertyName, "loadTheseAfter", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsLoadPositionProperty(string propertyName) => string.Equals(propertyName, "loadTop", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(propertyName, "loadBottom", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasConstraintContent(KeyValuePair<string, JsonNode?> property)
     {
-        JsonArray values => $"{property.Key}: {string.Join(", ", ReadStringValues(values))}",
-        JsonObject values => $"{property.Key}: {string.Join(", ", values.Select(entry => entry.Key))}",
-        _ => null
-    };
+        if (!IsDisplayedConstraintProperty(property.Key)) return false;
+        return property.Value switch
+        {
+            JsonArray values => ReadStringValues(values).Any(),
+            JsonObject values => values.Any(entry => !IsMetadataProperty(entry.Key) || HasNonEmptyText(entry.Value)),
+            JsonValue value => !value.TryGetValue<string>(out var text) || !string.IsNullOrWhiteSpace(text),
+            _ => false
+        };
+    }
+
+    private static bool IsMetadataProperty(string propertyName) => string.Equals(propertyName, "comment", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(propertyName, "name", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasNonEmptyText(JsonNode? value) => value is JsonValue jsonValue && (!jsonValue.TryGetValue<string>(out var text) || !string.IsNullOrWhiteSpace(text));
+
+    private static string? CreateConstraintSummary(KeyValuePair<string, JsonNode?> property)
+    {
+        if (IsLoadPositionProperty(property.Key)) return property.Key;
+        return property.Value switch
+        {
+            JsonArray values => $"{property.Key}: {string.Join(", ", ReadStringValues(values))}",
+            JsonObject values => $"{property.Key}: {string.Join(", ", values.Select(entry => entry.Key))}",
+            _ => null
+        };
+    }
 }
