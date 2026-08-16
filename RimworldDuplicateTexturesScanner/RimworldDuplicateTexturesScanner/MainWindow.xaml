@@ -1,7 +1,7 @@
 <Window x:Class="RimworldDuplicateTexturesScanner.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="RimTexture Inspector" Height="920" Width="1220" MinHeight="700" MinWidth="900">
+        Title="RimTexture Inspector" Height="1000" Width="1220" MinHeight="760" MinWidth="900">
   <Grid Margin="14">
     <Grid.RowDefinitions>
       <RowDefinition Height="Auto" />
@@ -10,10 +10,9 @@
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="Auto" />
       <RowDefinition Height="*" />
       <RowDefinition Height="Auto" />
-      <RowDefinition Height="190" />
+      <RowDefinition Height="220" />
     </Grid.RowDefinitions>
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" />
@@ -26,36 +25,28 @@
       <Button x:Name="CancelButton" Click="CancelButton_Click" Padding="12,6" Margin="8,0,0,0" Content="Cancel" IsEnabled="False" />
     </StackPanel>
     <Grid Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
-      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Local Mods folder:" />
-      <TextBox Grid.Row="1" x:Name="LocalModsPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld local Mods folder; leave blank to exclude local mods" />
-      <Button Grid.Row="1" Grid.Column="1" Click="BrowseLocalModsButton_Click" Padding="12,6" Content="Browse" />
+      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="8" /><RowDefinition Height="Auto" /><RowDefinition Height="8" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+      <Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="*" /><ColumnDefinition Width="42" /></Grid.ColumnDefinitions>
+      <TextBlock Grid.Row="0" VerticalAlignment="Center" Margin="0,0,8,0" Text="Local Mods folder:" />
+      <TextBox Grid.Row="0" Grid.Column="1" x:Name="LocalModsPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld local Mods folder; leave blank to exclude local mods" />
+      <Button Grid.Row="0" Grid.Column="2" Click="BrowseLocalModsButton_Click" Padding="6,3" FontSize="16" Content="📁" ToolTip="Browse for the local Mods folder" />
+      <TextBlock Grid.Row="2" VerticalAlignment="Center" Margin="0,0,8,0" Text="Steam Workshop folder:" />
+      <TextBox Grid.Row="2" Grid.Column="1" x:Name="WorkshopPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="Steam Workshop RimWorld content folder; leave blank to exclude Workshop mods" />
+      <Button Grid.Row="2" Grid.Column="2" Click="BrowseWorkshopButton_Click" Padding="6,3" FontSize="16" Content="📁" ToolTip="Browse for the Steam Workshop folder" />
+      <TextBlock Grid.Row="4" VerticalAlignment="Center" Margin="0,0,8,0" Text="Active mods config:" />
+      <TextBox Grid.Row="4" Grid.Column="1" x:Name="ConfigPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld ModsConfig.xml, used to limit scanning to active mods" />
+      <Button Grid.Row="4" Grid.Column="2" Click="BrowseConfigButton_Click" Padding="6,3" FontSize="16" Content="📁" ToolTip="Browse for ModsConfig.xml" />
     </Grid>
-    <Grid Grid.Row="3" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
-      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Steam Workshop folder:" />
-      <TextBox Grid.Row="1" x:Name="WorkshopPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="Steam Workshop RimWorld content folder; leave blank to exclude Workshop mods" />
-      <Button Grid.Row="1" Grid.Column="1" Click="BrowseWorkshopButton_Click" Padding="12,6" Content="Browse" />
-    </Grid>
-    <Grid Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,12">
-      <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-      <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
-      <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="Active mods config:" />
-      <TextBox Grid.Row="1" x:Name="ConfigPathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimWorld ModsConfig.xml, used to limit scanning to active mods" />
-      <Button Grid.Row="1" Grid.Column="1" Click="BrowseConfigButton_Click" Padding="12,6" Content="Browse" />
-    </Grid>
-    <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,0,12">
+    <DockPanel Grid.Row="4" Grid.ColumnSpan="2" Margin="0,0,0,12">
       <TextBlock VerticalAlignment="Center" Text="Select a conflict, then use Ignore combination. Only an exact matching combination is hidden." TextWrapping="Wrap" />
     </DockPanel>
-    <DockPanel Grid.Row="6" Grid.ColumnSpan="2" Margin="0,0,0,12">
+    <DockPanel Grid.Row="5" Grid.ColumnSpan="2" Margin="0,0,0,12">
       <Button DockPanel.Dock="Right" x:Name="RemoveAllIgnoredCombinationsButton" Click="RemoveAllIgnoredCombinationsButton_Click" Padding="12,6" Content="Remove all conflicts" IsEnabled="False" />
       <Button DockPanel.Dock="Right" x:Name="RemoveIgnoredCombinationButton" Click="RemoveIgnoredCombinationButton_Click" Padding="12,6" Margin="0,0,8,0" Content="Remove selected conflicts" IsEnabled="False" />
-      <ListBox x:Name="IgnoredCombinationsListBox" Height="74" SelectionMode="Extended" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
+      <ListBox x:Name="IgnoredCombinationsListBox" Height="110" SelectionMode="Extended" SelectionChanged="IgnoredCombinationsListBox_SelectionChanged" DisplayMemberPath="DisplayText" />
     </DockPanel>
 
-    <GroupBox Grid.Row="7" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
+    <GroupBox Grid.Row="6" Grid.Column="0" Header="Conflicting texture paths" Margin="0,0,8,0">
       <ListView x:Name="DuplicateGroups" SelectionChanged="DuplicateGroups_SelectionChanged">
         <ListView.View>
           <GridView>
@@ -67,10 +58,10 @@
       </ListView>
     </GroupBox>
 
-    <GroupBox Grid.Row="7" Grid.Column="1" Header="Copies / preferred provider">
+    <GroupBox Grid.Row="6" Grid.Column="1" Header="Copies / preferred provider">
       <Grid Margin="8">
         <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-        <ListBox x:Name="CopiesList" SelectionChanged="CopiesList_SelectionChanged">
+        <ListBox x:Name="CopiesList" MinHeight="220" SelectionChanged="CopiesList_SelectionChanged">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <Grid Margin="3">
@@ -95,8 +86,8 @@
         </StackPanel>
       </Grid>
     </GroupBox>
-    <TextBlock Grid.Row="8" Grid.ColumnSpan="2" x:Name="StatusText" Margin="0,10,0,0" Foreground="DimGray" />
-    <GroupBox Grid.Row="9" Grid.ColumnSpan="2" Header="RimSort user rules" Margin="0,10,0,0">
+    <TextBlock Grid.Row="7" Grid.ColumnSpan="2" x:Name="StatusText" Margin="0,10,0,0" Foreground="DimGray" />
+    <GroupBox Grid.Row="8" Grid.ColumnSpan="2" Header="RimSort user rules" Margin="0,10,0,0">
       <Grid Margin="8">
         <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
         <Grid Grid.Row="0" Margin="0,0,0,6">
@@ -104,7 +95,7 @@
           <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="108" /></Grid.ColumnDefinitions>
           <TextBlock Grid.ColumnSpan="2" Margin="0,0,0,4" Text="RimSort rules file:" />
           <TextBox Grid.Row="1" x:Name="RulesFilePathTextBox" Margin="0,0,8,0" VerticalContentAlignment="Center" ToolTip="RimSort userRules.json file" />
-          <Button Grid.Row="1" Grid.Column="1" Padding="12,5" Click="BrowseRulesButton_Click" Content="Browse" />
+          <Button Grid.Row="1" Grid.Column="1" Padding="6,3" FontSize="16" Click="BrowseRulesButton_Click" Content="📁" ToolTip="Browse for userRules.json" />
         </Grid>
         <ListBox Grid.Row="1" x:Name="RulesListBox" SelectionMode="Extended" DisplayMemberPath="DisplayText" SelectionChanged="RulesListBox_SelectionChanged" />
         <Grid Grid.Row="2" Margin="0,6,0,0">
